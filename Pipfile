@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+
+[dev-packages]
+
+[requires]
+python_version = "^3.12"
+python_full_version = "3.12.0"
+
+[scripts]
+gdocs = "python gdocs/poc.py"
+slack = "python slack/poc.py"
