@@ -7,6 +7,9 @@
 
 >Short Demo: https://www.youtube.com/watch?v=wWC4lQWZbcE
 
+> **Last minute warning: As we've mistakenly pushed the OpenAI and Slack keys to
+> the repo, it seems OpenAI and Slack have [automatically cancelled them](https://docs.github.com/en/code-security/secret-scanning/about-secret-scanning) :(**
+
 A chat bot powered by OpenAI's GPT-4 Turbo model to automate incident reporting. It monitors a Slack channel and generates a Google Docs document which is tracked and kept updated.
 
 It does this by leveraging the newly released "gpt-4-1106-preview" model and [function calling](https://platform.openai.com/docs/guides/function-calling), which allows it to have access to some tools, in this case that let it modify a Google doc.
