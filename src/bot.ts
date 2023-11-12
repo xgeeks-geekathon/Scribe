@@ -32,7 +32,7 @@ const SYSTEM_INSTRUCTIONS = `
 - You don't have the capability to send messages to the chat, only to call the tools provided to you. Error messages and such copied info should be relayed verbatim, unless overly verbose.
 - You must always translate everything to English, even if participants use other languages.
 - You will receive the following types of input (between quotes, <something> is a placeholder, the "<>" are not literal):
-  - "New channel" (when joining a new channel)
+  - "New channel" (when joining a new channel. assume nothing has been changed until this point, so update the title and other settings as soon as you get any info-)
   - "<user>: <message>" (when a message is received, replace <user> with the user name, and <message> with the message)
   - "<user> joined" (when a user joins the channel)
 `;
@@ -149,6 +149,7 @@ export class IncidentBot {
               delete tool["function"]["fn"];
               return tool as ChatCompletionTool;
             }),
+            temperature: 1.0,
           });
 
           let calledTools = false;
@@ -171,7 +172,9 @@ export class IncidentBot {
 
                 /*await this.slack.client.chat.postMessage({
                   channel,
-                  text: `${function_name}(${tool_call.function.arguments})`,
+                  text: `\`${function_name}(${JSON.stringify(
+                    function_args,
+                  )})\``,
                 });*/
 
                 convo.messages.push({
@@ -199,6 +202,8 @@ export class IncidentBot {
   }
 
   async onMessage(e: SlackEventMiddlewareArgs<"message">) {
+    if (e.message.subtype) return; // ignore non-messages (like deleted messages)
+
     this.debug("New message:", e.message);
 
     const chan = e.message.channel;
@@ -207,10 +212,18 @@ export class IncidentBot {
       KV.convos[chan] = {
         gdocId: newFileId!,
         messages: [],
-        inbox: [],
+        inbox: ["New channel"],
       };
-
-      await this.toolUpdateTitle(chan, { title: "Untitled" });
+      await this.slack.client.chat.postMessage({
+        channel: chan,
+        text: `Hi! I'll be keeping this report updated: https://docs.google.com/document/d/${newFileId!}`,
+      });
+      await this.toolUpdateTitle(chan, {
+        title: "Untitled",
+      });
+      await this.toolUpdatePriority(chan, {
+        priority: 5,
+      });
     }
     const convo = KV.convos[chan];
 
@@ -271,6 +284,7 @@ export class IncidentBot {
         }
       }
     }
+
     if (updates.length > 0) {
       await this.gdocs.documents.batchUpdate({
         documentId: doc.data.documentId!,
@@ -311,13 +325,13 @@ export class IncidentBot {
       },
       update_title: {
         description:
-          "Updates the incident title. It should reflect the nature of the incident, in very few words.",
+          "Updates the incident title. It should reflect the general impact/description of the incident, in few words. You can change it reasonably often.",
         parameters: {
           type: "object",
           properties: {
             title: {
               type: "string",
-              description: "The new title",
+              description: "The new document title",
             },
           },
           required: ["title"],
@@ -326,25 +340,25 @@ export class IncidentBot {
       },
       append_external_status: {
         description:
-          "Append a bullet item to a list of external status updates. These should be concise, and only updated when there's information relevant to people not directly handling the incident.",
+          "Append a bullet item to a list of status updates. These are meant to be read by the company at large, including people not directly managing the incident and products in question, but possibly affected by it. They should be concise, but frequent (bot not frequent enough to add little or no information). For example, it would be updated when there's more info about availability and impact, but not when someone just jumped in to help.",
         parameters: TOOL_APPEND_PARAMS,
         fn: this.toolAppendExternalStatus,
       },
       append_internal_status: {
         description:
-          "Append a bullet item to a list of internal status updates. These should be updated more frequently, when more information is uncovered, or when someone gets involved or starts following a certain path of investigation. They can be more detailed. For example, any numbers (% failures, error codes) shouldn't be dropped.",
+          "Append a bullet item to a list of internal (within the incident management team) status updates. These should be updated more frequently, when more information is uncovered, or when someone gets involved or starts following a certain path of investigation. They can be more detailed. For example, any numbers (% failures, error codes) shouldn't be dropped, and you can mention co-workers by name, as well as codenames and trade secrets.",
         parameters: TOOL_APPEND_PARAMS,
         fn: this.toolAppendInternalStatus,
       },
       append_remediations: {
         description:
-          "Append a bullet item to a list of remediations, based on feedback from chat participants.",
+          "Append a bullet item to a list of future/in-progress remediations, based on information from chat participants.",
         parameters: TOOL_APPEND_PARAMS,
         fn: this.toolAppendRemediations,
       },
       append_impact: {
         description:
-          "Append a bullet item to a list of impacted services, based on the conversation.",
+          "Append a bullet item to a list of impacted services, based on the conversation. You should update this whenever there are new informations on impacted systems, platforms, products and users.",
         parameters: TOOL_APPEND_PARAMS,
         fn: this.toolAppendImpact,
       },
@@ -368,7 +382,7 @@ export class IncidentBot {
   }
 
   async toolAppendExternalStatus(channel: string, options: { text: string }) {
-    await this.docListAppend(channel, "Status (Public)", options.text);
+    await this.docListAppend(channel, "Status", options.text);
   }
 
   async toolAppendInternalStatus(channel: string, options: { text: string }) {
@@ -401,7 +415,8 @@ export class IncidentBot {
             requests: [
               {
                 insertText: {
-                  text: text + "\n",
+                  text:
+                    dayjs.utc().format("HH:mm:ss UTC") + " - " + text + "\n",
                   location: {
                     index: block.startIndex! - 1,
                   },
