@@ -1,5 +1,10 @@
 # Scribe
 
+> Team: "Temporary Team Name"
+> Members:
+>   - Luís Tonicha @lud0v1c
+>   - Tiago Dias @tiagoad
+
 >Short Demo: https://www.youtube.com/watch?v=wWC4lQWZbcE
 
 A chat bot powered by OpenAI's GPT-4 Turbo model to automate incident reporting. It monitors a Slack channel and generates a Google Docs document which is tracked and kept updated.
