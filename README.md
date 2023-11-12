@@ -58,9 +58,9 @@ npm install # >= 20.9.0 recommended
 4. Export environment variables:
 
 ```bash
-SLACK_SIGNING_SECRET=your_slack_signing_secret
-SLACK_BOT_TOKEN=your_slack_bot_token
-GOOGLE_CREDENTIALS_PATH=./google-credentials.json
+SCRIBE_SLACK_APP_TOKEN=your_slack_app_token
+SCRIBE_SLACK_BOT_TOKEN=your_slack_bot_token
+SCRIBE_OPENAI_KEY=your_openai_token
 ```
 
 5. Run `scribe.sh`
