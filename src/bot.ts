@@ -19,10 +19,8 @@ import Docs = docs_v1.Docs;
 const TEMPLATE_FILE_ID = "10z30aQruINuaH0sPuZuOSKKXpCFvEQ2OjJ15RvTd-HQ";
 const INCIDENT_FOLDER_ID = "1DvyCIFQJpQWhHayUOw28TmfA_26vf1Ja";
 
-const SLACK_BOT_TOKEN =
-  "xoxb-6183999878612-6181542032307-hjDwfSXjnd7YY9rxADe6muoF";
-const SLACK_APP_TOKEN =
-  "xapp-1-A065Q81J00H-6178724373941-568f7173feec6c9ce32fd350c2cc9e5fdc0bf251ed7b9c67a7ed00827c0e7bb0";
+const SLACK_BOT_TOKEN = process.env["SCRIBE_SLACK_BOT_TOKEN"];
+const SLACK_APP_TOKEN = process.env["SCRIBE_SLACK_APP_TOKEN"];
 
 const SYSTEM_INSTRUCTIONS = `
 - You are a chat bot in charge of updating a live google document with the ongoing updates of an event being managed in a channel. 
