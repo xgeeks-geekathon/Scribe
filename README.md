@@ -40,7 +40,7 @@ These sections are dynamically updated based on the output from the ChatGPT mode
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/xgeeks-geekathon/scribe.git
+git clone https://github.com/xgeeks-geekathon/team-tmpteamname-scribe.git
 cd scribe
 ```
 
